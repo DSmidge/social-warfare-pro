@@ -194,7 +194,27 @@ class SWP_Pro_Analytics_Database {
 		 *
 		 */
 		if ( $total_counts > 0 ) :
-			$wpdb->replace( $table_name, $data );
+			$fields  = array();
+			$values = array();
+			$assignments = array();
+
+			foreach ( array_keys( $data ) as $key ) {
+				$value = $data[$key];
+				if ( $key == 'date') $value = "'" . $value . "'";
+				if ( is_null( $value ) ) $value = 'NULL';
+
+				$fields[] = '`' . $key . '`';
+				$values[] = $value;
+				if ( $key != 'post_id' && $key != 'date' ) {
+					$assignments[] = '`' . $key . '` = ' . $value;
+				}
+			}
+
+			$insert_fields      = implode( ', ', @fields );
+			$insert_values      = implode( ', ', $values );
+			$update_assignments = implode( ', ', $assignments );
+
+			$wpdb->query( "INSERT INTO $table_name ($insert_fields) VALUES ($insert_values) ON DUPLICATE KEY UPDATE $update;" );
 		endif;
 	}
 
